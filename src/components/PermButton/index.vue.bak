@@ -1,0 +1,91 @@
+<template v-for="item in btactions">
+  <el-button v-if="showButton(item)" :key="item.id" :type="classType(item.code)" plain size="small">{{ item.name }}</el-button>
+</template>
+<script>
+import { mapState } from 'vuex'
+export default {
+  name: 'PerButton',
+  data() {
+    return {
+      btactions: []
+    }
+  },
+  props: {
+    single: {
+      type: Boolean,
+      default: true,
+      required: true
+    },
+    path: {
+      type: String,
+      default: '',
+      required: true
+    },
+    rowData: {
+      type: Object,
+      default: null,
+      required: true
+    }
+  },
+  methods: {
+    getActions() {
+      console.log(this.path)
+      this.btactions = this.actions[this.path]
+    },
+    classType(code) {
+      switch (code) {
+        case 'edit':
+          return 'success'
+        case 'add':
+          return 'primary'
+        case 'del':
+          return 'danger'
+        case 'enable':
+          return 'danger'
+        case 'disable':
+          return 'warning'
+        default:
+          return 'primary'
+      }
+    },
+    showButton(item) {
+      if (item.code === 'add') {
+        return true
+      } else if (item.code === 'query') {
+        return false
+      } else {
+        // code in (enable, disable, del, edit)
+        // if not check only row
+        if (this.single) {
+          return false
+        } else {
+          // 选中处理启动和禁用按钮,如果当前行的状态是启动=1,同时code=enable,不显示，如果是disable，显示
+          if (this.rowData[0].status === 1) {
+            if (item.code === 'enable') {
+              return false
+            } else if (item.code === 'disable') {
+              return true
+            }
+            // 选中处理启动和禁用按钮,如果当前行的状态是启动=2,同时code=enable,显示，如果是disable，不显示
+          } else {
+            if (item.code === 'enable') {
+              return true
+            } else if (item.code === 'disable') {
+              return false
+            }
+          }
+          return true
+        }
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      actions: state => state.router.actions
+    })
+  },
+  created() {
+    this.getActions()
+  }
+}
+</script>
